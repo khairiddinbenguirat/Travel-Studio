@@ -1,6 +1,67 @@
 <!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Travel Studio</title><style>
 *{box-sizing:border-box}body{margin:0;background:#f5f5f0;color:#252a27;font:15px system-ui}header{background:#26362e;color:white;padding:20px 5%;display:flex;align-items:center;gap:16px;flex-wrap:wrap}header strong{font-size:23px;margin-right:auto}main{max-width:1100px;margin:28px auto;padding:0 18px}button,input,select,textarea{font:inherit;padding:9px 12px;border:1px solid #ccd4cd;border-radius:7px;background:white;color:inherit}button{cursor:pointer}button.primary{background:#527565;color:white;border:0}header button{color:#26362e}section,article{background:white;border:1px solid #e0e4de;border-radius:12px;padding:20px;margin:12px 0}h1,h2,h3{margin:0 0 14px}small{color:#65756a}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}.row>*{min-width:0}label{display:inline-flex;flex-direction:column;gap:4px;font-size:12px;color:#52635a}input,select{max-width:100%}details{border-top:1px solid #e1e5df;padding:12px 0}summary{cursor:pointer;font-weight:600}.day{background:#f4f6f2;padding:12px;border-radius:8px;margin:10px 0}.service{background:white;padding:10px;margin:8px 0;border-radius:8px}.checks{display:flex;flex-wrap:wrap;gap:10px}.checks label{display:flex;flex-direction:row;align-items:center;font-size:14px}.muted{color:#65756a}.danger{color:#a43b36}.stats{display:flex;gap:24px;flex-wrap:wrap;font-size:19px}textarea{width:100%}@media print{header,.no-print,button,input,select,textarea{display:none!important}body{background:white}section,article{border:0;break-inside:avoid}main{margin:0;max-width:none}}
-</style><header><strong>◈ Travel Studio <small style="color:#c5d5ca">Sud tunisien</small></strong><button onclick="page='db';render()">Destinations</button><button onclick="page='trip';render()">Trip Planner</button><button onclick="page='settings';render()">Paramètres</button><span id="syncStatus" role="status" style="font-size:12px"></span></header><main id="app"></main><script>
+/* Nouveau design Travel Studio */
+
+body {
+    background: #f4f6f3;
+    line-height: 1.6;
+}
+
+main {
+    max-width: 1440px;
+    padding: 0 24px;
+}
+
+header {
+    background: #263e33;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+section, article {
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 3px 12px #00000008;
+}
+
+article {
+    border-left: 4px solid #648675;
+}
+
+article > .row {
+    background: #f5f8f5;
+    padding: 14px;
+    border-radius: 8px;
+}
+
+.stats {
+    background: #edf3ee;
+    padding: 18px;
+    border-radius: 12px;
+    color: #34594a;
+}
+
+.service {
+    border: 1px solid #dce5dd;
+    border-left: 3px solid #648675;
+    padding: 16px;
+}
+
+summary {
+    color: #34594a;
+    padding: 12px;
+    background: #eaf0eb;
+    border-radius: 8px;
+}
+
+button:hover {
+    background: #eaf0eb;
+}
+
+button.primary:hover {
+    background: #34594a;
+}</style><header><strong>◈ Travel Studio <small style="color:#c5d5ca">Sud tunisien</small></strong><button onclick="page='db';render()">Destinations</button><button onclick="page='trip';render()">Trip Planner</button><button onclick="page='settings';render()">Paramètres</button><span id="syncStatus" role="status" style="font-size:12px"></span></header><main id="app"></main><script>
 const $=id=>document.getElementById(id), uid=()=>crypto.randomUUID(), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), cats=['Logement','Restaurant','Activité','Transport','Guide','Prestataire','Partenaire','Facility'];
 let data;try{data=JSON.parse(localStorage.getItem('travel-studio-v1'))}catch{};if(!data)data={cities:['Djerba','Tataouine','Ksar Ghilane','Douz','Tozeur','Matmata'].map(name=>({id:uid(),name})),providers:[],trips:[]};let page='trip',active=data.trips[0]?.id,tab='plan',city='',session=null;localStorage.removeItem('ts-config');const save=()=>{localStorage.setItem('travel-studio-v1',JSON.stringify(data));dirty=true;persistMeta();schedule()};const change=()=>{save();render()};const trip=()=>data.trips.find(t=>t.id===active);const cityName=id=>data.cities.find(c=>c.id===id)?.name||'Destination';const provider=id=>data.providers.find(p=>p.id===id);const opt=(arr,val)=>arr.map(([v,n])=>`<option value="${esc(v)}" ${v===val?'selected':''}>${esc(n)}</option>`).join('');const field=(name,value,code,type='text')=>`<label>${name}<input type="${type}" value="${esc(value)}" onchange="${code}"></label>`;const sel=(name,arr,val,code)=>`<label>${name}<select onchange="${code}">${opt(arr,val)}</select></label>`;const money=n=>Number(n||0).toLocaleString('fr-FR',{maximumFractionDigits:2})+' TND';const date=(t,i)=>{let d=new Date(t.start+'T12:00:00');d.setDate(d.getDate()+i);return isNaN(d)?'':d.toLocaleDateString('fr-FR')};const all=t=>t.stages.flatMap((s,i)=>[...s.days.flatMap((d,j)=>d.items.map(a=>({a,s,j,i,transfer:false}))),...(i?s.transfer.map(a=>({a,s,j:0,i,transfer:true})):[])]);const dayIndex=(t,i,j)=>t.stages.slice(0,i).reduce((n,s)=>n+s.days.length,0)+j;const total=t=>all(t).flatMap(x=>x.a.links).reduce((r,l)=>[r[0]+l.buy*l.qty,r[1]+l.sell*l.qty,r[2]+l.deposit], [0,0,0]);function newTrip(){let t={id:uid(),name:'Nouveau séjour',start:new Date().toISOString().slice(0,10),pax:2,status:'Brouillon',stages:[]};data.trips.push(t);active=t.id;addStage(false);addStage(false);change()}function addStage(refresh=true){let t=trip();if(t.stages.length>=6)return;t.stages.push({city:data.cities[0]?.id||'',name:'',days:Array.from({length:2},()=>({items:[]})),transfer:[]});if(refresh)change()}function addItem(i,j,category){let s=trip().stages[i],a={id:uid(),name:j<0?'Transfert':'Nouvelle prestation',time:'09:00',category:j<0?'Transport':(cats.includes(category)?category:'Activité'),notes:'',links:[]};(j<0?s.transfer:s.days[j].items).push(a);change()}function item(id){return all(trip()).find(x=>x.a.id===id).a}function link(id,pid,on){let a=item(id),p=provider(pid);if(on)a.links.push({pid,qty:1,buy:p.buy,sell:p.sell,deposit:0,status:'À contacter',ref:''});else a.links=a.links.filter(l=>l.pid!==pid);change()}function editLink(id,pid,k,v){item(id).links.find(l=>l.pid===pid)[k]=v;change()}function removeItem(id){let t=trip();for(let s of t.stages){s.transfer=s.transfer.filter(a=>a.id!==id);for(let d of s.days)d.items=d.items.filter(a=>a.id!==id)}change()}
 function render(){let t=trip();$('app').innerHTML=page==='db'?db():page==='settings'?settings():`<div class="row"><h1 style="margin-right:auto">Mes séjours</h1><button class="primary" onclick="newTrip()">+ Nouveau séjour</button></div><div class="row">${data.trips.map(x=>`<button onclick="active='${x.id}';tab='plan';render()" ${x.id===active?'class="primary"':''}>${esc(x.name)} · ${esc(x.status)}</button>`).join('')}</div>${t?planner(t):'<section>Créez votre premier séjour.</section>'}`}
