@@ -1,17 +1,2 @@
-# Travel Studio — Vercel Edition
-
-## Déploiement
-1. Décompresser le ZIP. Créer un dépôt GitHub privé et y déposer le contenu du dossier (vercel.json à la racine).
-2. Dans https://vercel.com/new importer le dépôt. Framework Preset : Other. Root Directory : racine du dépôt. Output Directory : public. Aucun build ni variable d'environnement nécessaire.
-3. Cliquer Deploy puis ouvrir l'adresse vercel.app attribuée.
-4. Pour une activité commerciale, utiliser une offre Vercel adaptée (Pro plutôt que Hobby).
-
-## Supabase (facultatif pour tester)
-1. Créer un projet sur https://supabase.com/dashboard.
-2. Exécuter supabase/database.sql une seule fois dans SQL Editor.
-3. Créer un utilisateur dans Authentication > Users.
-4. Dans Travel Studio > Paramètres, renseigner l'URL HTTPS du projet et la clé publique anon (ou publishable), puis se connecter. Ne jamais utiliser service_role ou une clé secrète.
-5. Envoyer/récupérer manuellement les données. Chaque compte possède son propre espace distant. Exporter une sauvegarde JSON avant toute récupération ou migration.
-
-## Limites
-Adaptation statique de la V1, pas une réécriture Next.js. Le site est accessible publiquement; les données locales restent dans le navigateur et ne sont pas chiffrées. La connexion Supabase protège uniquement l'espace distant, pas l'accès à l'interface. Pas de synchronisation automatique ni de collaboration simultanée. PDF via impression du navigateur. Pas de réservation envoyée automatiquement. Ne pas utiliser de données clients réelles avant mise en place d'une authentification obligatoire et validation de sécurité. Déploiement Vercel et connexion Supabase non testés en ligne.
+# Travel Studio — synchronisation automatique
+Exporter les données JSON avant mise à jour. Exécuter supabase/database.sql dans SQL Editor (migration compatible avec la table existante). Créer un utilisateur confirmé dans Authentication > Users. Remplacer public/index.html dans GitHub, conserver vercel.json et redéployer. Dans Paramètres saisir URL HTTPS Supabase et clé publique anon/publishable, puis se connecter. Ne jamais utiliser service_role. Les modifications sont envoyées après 700 ms; lecture toutes les 15 secondes. En cas de conflit, Paramètres > Résoudre un conflit exporte une copie locale avant de charger la version distante. Connexion à renouveler après rechargement ou expiration du jeton. Un espace par compte, pas de collaboration multi-comptes. Les données locales restent dans le navigateur après déconnexion; utiliser un profil privé dédié. Ne pas utiliser sur un appareil partagé. Aucun test réel Supabase effectué.
