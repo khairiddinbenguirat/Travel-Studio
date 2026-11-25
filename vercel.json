@@ -1,1 +1,32 @@
-{"framework":null,"buildCommand":null,"outputDirectory":"public","functions":{"api/gateway.js":{"includeFiles":"private/**"}},"rewrites":[{"source":"/","destination":"/api/gateway?action=app"}]}
+
+{
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": "public",
+  "functions": {
+    "api/gateway.js": {
+      "includeFiles": "private/**"
+    }
+  },
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/api/gateway?action=app"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/api/gateway?action=app"
+    },
+    {
+      "src": "/api/gateway",
+      "dest": "/api/gateway"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/.*",
+      "status": 404
+    }
+  ]
+}
