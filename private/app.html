@@ -23,4 +23,4 @@ async function syncNow(){if(!session||!ready||busy||blocked)return;if(!navigator
 async function resolveConflict(){if(!session||busy)return;busy=true;try{let r=await remote();if(!r)throw Error('Aucune version distante');if(!confirm('Exporter une copie locale puis charger la version distante ? Annuler conserve vos modifications locales.'))return;backup();adopt(r);blocked=false;status('Version distante chargée')}catch(e){alert(e.message)}finally{busy=false}}
 async function logout(){if(busy)return;if(dirty){alert('Synchronisez ou exportez vos données avant de vous déconnecter.');return}let r=await fetch('/api/gateway?action=logout',{method:'POST'});if(r.ok){localStorage.removeItem('travel-studio-v1');localStorage.removeItem('ts-sync-meta');localStorage.removeItem('ts-config');location.reload()}}
 window.addEventListener('online',syncNow);window.addEventListener('offline',()=>status('Hors ligne · sauvegarde locale'));setInterval(syncNow,15000);render();status('Connexion sécurisée…');login();
-</script></html>
+</script></html> 
